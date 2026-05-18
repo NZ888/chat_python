@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block links %}
+    
+{% endblock %}
+{% block title %} Register {% endblock %}
+{% block content %}
+    <div>
+        <h1>Створити обліковий запис</h1>
+        <form action="" method="post">
+            <label for="">
+                Введіть вашу електронну пошту нижче, щоб створити обліковий запис
+                <input type="email" name="email" id="email" placeholder="name@example.com">
+            </label>
+            <label for="">
+                Задайте ваш пароль нижче, щоб створити обліковий запис
+                <input type="password" name="password" id="password" placeholder="***************">
+            </label>
+            <button type="submit">Надіслати код підтвердження</button>
+        </form>
+        <p>Натискаючи «Продовжити», ви погоджуєтеся з нашими
+            Умовами обслуговування та Політикою конфіденційності.</p>
+    </div>
+{% endblock %}
