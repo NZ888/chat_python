@@ -31,8 +31,7 @@ def render_login():
         password = flask.request.form["password"]
         if email and password:
             user = User.query.filter_by(email=email).first()
-            is_password_compare = security.check_password_hash(user.password, password)
-            if is_password_compare:
+            if user and security.check_password_hash(user.password, password):
                 flask_login.login_user(user=user)
                 return flask.redirect("/")
     return flask.render_template("login.html")

@@ -1,5 +1,263 @@
 {% extends 'base.html' %}
 
+{% block links %}
+    <link rel="stylesheet" href="{{ url_for('chat.static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block title %}Chat{% endblock %}
+
 {% block content %}
-    <p>chat</p>
+{% set profile_name = current_user.name or 'Alex' %}
+{% set profile_second_name = current_user.second_name or 'Andriievska' %}
+{% set profile_username = current_user.user_name or '@alexxxx' %}
+{% set profile_gender = current_user.gender or 'Female' %}
+{% set profile_birthday = current_user.date_of_birth or '1995-04-14' %}
+
+<div class="chat-shell" data-chat-app>
+    <header class="app-header">
+        <a class="brand" href="/" aria-label="Головна сторінка чату">
+                <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.6778 0C7.5388 0 6.7078 0.431 6.1728 1.104C5.6518 1.759 5.4498 2.594 5.4498 3.359C5.4498 3.783 5.5718 4.306 5.7578 4.829C5.9478 5.361 6.2158 5.93 6.5378 6.455C6.8578 6.977 7.2428 7.473 7.6708 7.845C8.0928 8.212 8.6078 8.5 9.1778 8.5C9.7878 8.5 10.2738 8.14 10.6318 7.716C10.9938 7.286 11.2838 6.723 11.5098 6.15C11.9568 5.013 12.2028 3.693 12.1778 2.982C12.153 2.20031 11.8218 1.45972 11.2558 0.92C10.6558 0.35 9.7858 0 8.6778 0ZM20.6518 6.842C20.3318 5.882 19.6098 4.963 18.6218 4.485C17.6078 3.995 16.3578 3.992 15.0798 4.808C14.1758 5.385 13.2068 6.336 12.5458 7.319C12.2158 7.811 11.9458 8.333 11.8098 8.839C11.6748 9.343 11.6558 9.887 11.9088 10.364C12.1698 10.857 12.7038 11.158 13.2408 11.346C13.7968 11.541 14.4638 11.653 15.1328 11.701C16.4528 11.795 17.9288 11.649 18.7608 11.28C20.4378 10.534 21.2988 8.782 20.6518 6.842ZM16.0088 14.351C16.4538 14.665 16.8548 15.026 17.1038 15.398C17.5898 16.128 17.8628 16.958 17.7708 17.778C17.6758 18.616 17.2088 19.374 16.3518 19.945C15.5318 20.492 14.6858 20.75 13.8488 20.648C13.0118 20.546 12.2578 20.092 11.6068 19.362C11.3008 19.02 11.0728 18.508 10.9108 17.975C10.7386 17.3977 10.6284 16.8037 10.5818 16.203C10.5348 15.601 10.5518 14.99 10.6608 14.473C10.7638 13.983 10.9778 13.449 11.4368 13.18C11.8568 12.935 12.3968 12.93 12.8868 13.006C13.3988 13.085 13.9578 13.266 14.4928 13.5C15.0244 13.7338 15.5321 14.0194 16.0088 14.351ZM7.8328 13.069C7.4228 12.826 6.9078 12.876 6.4748 12.986C6.0148 13.103 5.5078 13.323 5.0128 13.589C4.0228 14.119 2.9948 14.877 2.3558 15.516C1.1738 16.698 0.953799 17.902 1.2278 18.931C1.4888 19.913 2.1778 20.658 2.6808 21.039C4.2348 22.219 6.6328 22.006 7.9738 20.269C8.3538 19.778 8.5898 19.121 8.7278 18.444C8.8678 17.76 8.9168 17.014 8.8948 16.31C8.8728 15.608 8.7798 14.928 8.6248 14.376C8.55581 14.1159 8.45786 13.8643 8.3328 13.626C8.2178 13.417 8.0578 13.203 7.8328 13.069ZM1.3138 7.014C1.9828 6.658 2.8098 6.632 3.6578 6.915C4.3508 7.146 5.1708 7.701 5.7878 8.318C6.0978 8.63 6.3778 8.977 6.5678 9.332C6.7528 9.678 6.8838 10.094 6.7928 10.51C6.6248 11.284 5.9368 11.693 5.2238 11.91C4.4918 12.133 3.5648 12.21 2.6128 12.21C1.4468 12.21 0.702799 11.71 0.319799 10.977C-0.0392006 10.292 -0.0442005 9.479 0.0557995 8.872C0.193799 8.034 0.637799 7.374 1.3138 7.014Z" fill="#007AFF" />
+                </svg>
+            <span class="brand-name">Chat</span>
+        </a>
+
+        <div class="header-actions">
+            <button class="icon-button with-dot" type="button" aria-label="Сповіщення">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_53_508)">
+                    <path d="M8.55493 17.4965C8.70119 17.7498 8.91154 17.9601 9.16485 18.1063C9.41815 18.2526 9.70549 18.3296 9.99797 18.3296C10.2905 18.3296 10.5778 18.2526 10.8311 18.1063C11.0844 17.9601 11.2948 17.7498 11.441 17.4965" stroke="#666666" stroke-width="1.66633" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M2.7178 12.7691C2.60896 12.8884 2.53713 13.0367 2.51106 13.1961C2.48498 13.3555 2.50578 13.519 2.57092 13.6668C2.63606 13.8145 2.74274 13.9402 2.87798 14.0284C3.01322 14.1167 3.17119 14.1637 3.33268 14.1638H16.6633C16.8248 14.1639 16.9828 14.117 17.1181 14.0289C17.2535 13.9409 17.3603 13.8153 17.4256 13.6677C17.4909 13.52 17.5119 13.3566 17.486 13.1972C17.4602 13.0378 17.3885 12.8894 17.2799 12.7699C16.1718 11.6277 14.997 10.4137 14.997 6.66533C14.997 5.33951 14.4703 4.068 13.5328 3.13051C12.5953 2.19301 11.3238 1.66634 9.998 1.66634C8.67219 1.66634 7.40067 2.19301 6.46318 3.13051C5.52569 4.068 4.99901 5.33951 4.99901 6.66533C4.99901 10.4137 3.82341 11.6277 2.7178 12.7691Z" stroke="#666666" stroke-width="1.66633" stroke-linecap="round" stroke-linejoin="round" />
+                </g>
+                <defs>
+                    <clipPath id="clip0_53_508">
+                    <rect width="19.996" height="19.996" fill="white" />
+                    </clipPath>
+                </defs>
+                </svg>
+            </button>
+
+            <button class="icon-button" type="button" data-open-profile aria-label="Налаштування профілю">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_53_513)">
+                    <path d="M10.1813 1.66634H9.8147C9.37277 1.66634 8.94893 1.8419 8.63643 2.15439C8.32393 2.46689 8.14837 2.89073 8.14837 3.33267V3.48264C8.14807 3.77485 8.07094 4.06185 7.9247 4.31483C7.77846 4.56782 7.56827 4.77791 7.31521 4.92401L6.95695 5.1323C6.70363 5.27856 6.41628 5.35555 6.12378 5.35555C5.83128 5.35555 5.54393 5.27856 5.29061 5.1323L5.16564 5.06565C4.78327 4.84508 4.32901 4.78524 3.90256 4.89928C3.47612 5.01331 3.11235 5.29189 2.8911 5.67386L2.7078 5.99047C2.48723 6.37283 2.42739 6.8271 2.54143 7.25354C2.65546 7.67999 2.93404 8.04376 3.31601 8.26501L3.44099 8.34832C3.69283 8.49372 3.90224 8.70249 4.04841 8.95389C4.19457 9.2053 4.2724 9.49057 4.27415 9.78137V10.2063C4.27532 10.4999 4.19888 10.7886 4.05257 11.0432C3.90626 11.2978 3.69528 11.5092 3.44099 11.656L3.31601 11.731C2.93404 11.9522 2.65546 12.316 2.54143 12.7424C2.42739 13.1689 2.48723 13.6231 2.7078 14.0055L2.8911 14.3221C3.11235 14.7041 3.47612 14.9827 3.90256 15.0967C4.32901 15.2107 4.78327 15.1509 5.16564 14.9303L5.29061 14.8637C5.54393 14.7174 5.83128 14.6404 6.12378 14.6404C6.41628 14.6404 6.70363 14.7174 6.95695 14.8637L7.31521 15.072C7.56827 15.2181 7.77846 15.4282 7.9247 15.6811C8.07094 15.9341 8.14807 16.2211 8.14837 16.5133V16.6633C8.14837 17.1053 8.32393 17.5291 8.63643 17.8416C8.94893 18.1541 9.37277 18.3296 9.8147 18.3296H10.1813C10.6232 18.3296 11.0471 18.1541 11.3596 17.8416C11.6721 17.5291 11.8476 17.1053 11.8476 16.6633V16.5133C11.8479 16.2211 11.9251 15.9341 12.0713 15.6811C12.2175 15.4282 12.4277 15.2181 12.6808 15.072L13.0391 14.8637C13.2924 14.7174 13.5797 14.6404 13.8722 14.6404C14.1647 14.6404 14.4521 14.7174 14.7054 14.8637L14.8304 14.9303C15.2127 15.1509 15.667 15.2107 16.0934 15.0967C16.5199 14.9827 16.8837 14.7041 17.1049 14.3221L17.2882 13.9972C17.5088 13.6148 17.5686 13.1606 17.4546 12.7341C17.3405 12.3077 17.062 11.9439 16.68 11.7226L16.555 11.656C16.3007 11.5092 16.0897 11.2978 15.9434 11.0432C15.7971 10.7886 15.7207 10.4999 15.7218 10.2063V9.7897C15.7207 9.49608 15.7971 9.20736 15.9434 8.95278C16.0897 8.6982 16.3007 8.4868 16.555 8.33999L16.68 8.26501C17.062 8.04376 17.3405 7.67999 17.4546 7.25354C17.5686 6.8271 17.5088 6.37283 17.2882 5.99047L17.1049 5.67386C16.8837 5.29189 16.5199 5.01331 16.0934 4.89928C15.667 4.78524 15.2127 4.84508 14.8304 5.06565L14.7054 5.1323C14.4521 5.27856 14.1647 5.35555 13.8722 5.35555C13.5797 5.35555 13.2924 5.27856 13.0391 5.1323L12.6808 4.92401C12.4277 4.77791 12.2175 4.56782 12.0713 4.31483C11.9251 4.06185 11.8479 3.77485 11.8476 3.48264V3.33267C11.8476 2.89073 11.6721 2.46689 11.3596 2.15439C11.0471 1.8419 10.6232 1.66634 10.1813 1.66634Z" stroke="#666666" stroke-width="1.66633" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9.99797 12.4975C11.3784 12.4975 12.4975 11.3784 12.4975 9.99799C12.4975 8.61755 11.3784 7.49849 9.99797 7.49849C8.61754 7.49849 7.49847 8.61755 7.49847 9.99799C7.49847 11.3784 8.61754 12.4975 9.99797 12.4975Z" stroke="#666666" stroke-width="1.66633" stroke-linecap="round" stroke-linejoin="round" />
+                </g>
+                <defs>
+                    <clipPath id="clip0_53_513">
+                    <rect width="19.996" height="19.996" fill="white" />
+                    </clipPath>
+                </defs>
+                </svg>
+            </button>
+
+            <button class="avatar-button" type="button" data-open-profile aria-label="Відкрити профіль">
+                {{ (profile_name[:1] ~ profile_second_name[:1])|upper }}
+            </button>
+        </div>
+    </header>
+
+    <div class="chat-layout">
+        <aside class="chat-sidebar" aria-label="Список чатів">
+            <div class="sidebar-search">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="m16 16 4 4"/>
+                </svg>
+                <input type="search" placeholder="Пошук чатів..." data-chat-search aria-label="Пошук чатів">
+            </div>
+
+            <div class="sidebar-title-row">
+                <h2>Ваш чат</h2>
+                <button class="small-outline-button" type="button" data-open-create aria-label="Створити чат">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="loading-state" data-loading-state>
+                <span class="spinner"></span>
+                Завантаження чатів...
+            </div>
+
+            <div class="empty-state" data-empty-state hidden>
+                <p>У вас поки немає чатів.</p>
+                <button class="primary-button" type="button" data-open-create>Створити чат</button>
+            </div>
+
+            <p class="not-found-state" data-not-found-state hidden>Чати не знайдено</p>
+            <ul class="chat-list" data-chat-list aria-label="Доступні чати"></ul>
+        </aside>
+
+        <section class="conversation" aria-label="Активний чат">
+            <div class="conversation-header">
+                <div>
+                    <h1 data-active-title>General Chat</h1>
+                    <span data-active-subtitle>24 користувачі, 8 online</span>
+                </div>
+
+                <div class="conversation-tools">
+                    <button class="icon-button" type="button" aria-label="Пошук у чаті">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="m16 16 4 4"/>
+                        </svg>
+                    </button>
+                    <button class="icon-button" type="button" aria-label="Додаткові дії">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 12h.01M12 5h.01M12 19h.01"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages" data-message-list></div>
+
+            <form class="message-form" data-message-form>
+                <button class="emoji-button" type="button" aria-label="Емодзі">☺</button>
+                <input type="text" placeholder="Введіть повідомлення..." aria-label="Текст повідомлення">
+                <button class="send-button" type="submit" aria-label="Надіслати повідомлення">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m22 2-7 20-4-9-9-4 20-7Z"/>
+                        <path d="M22 2 11 13"/>
+                    </svg>
+                </button>
+            </form>
+        </section>
+
+        <aside class="users-panel" aria-label="Користувачі">
+            <div class="users-heading">
+                <h2>Користувачі</h2>
+                <span>24 користувачі · 8 online</span>
+            </div>
+
+            <ul class="users-list">
+                <li class="active"><span class="mini-avatar blue">IP</span><div><strong>Іван Петренко</strong><small>@ivan_petrenko</small></div></li>
+                <li><span class="mini-avatar purple">M</span><div><strong>Maria</strong><small>online</small></div></li>
+                <li><span class="mini-avatar green">J</span><div><strong>John</strong><small>online</small></div></li>
+                <li><span class="mini-avatar orange">K</span><div><strong>Kate</strong><small>online</small></div></li>
+                <li><span class="mini-avatar blue">S</span><div><strong>Sarah</strong><small>offline</small></div></li>
+                <li><span class="mini-avatar navy">D</span><div><strong>David</strong><small>offline</small></div></li>
+            </ul>
+
+            <div class="profile-preview">
+                <button class="panel-close" type="button" aria-label="Закрити картку профілю">×</button>
+                <span class="large-avatar">IP</span>
+                <strong>Іван Петренко</strong>
+                <a href="#">@ivan_petrenko</a>
+                <dl>
+                    <dt>Дата народження</dt>
+                    <dd>15 квіт. 1995 (30 років)</dd>
+                    <dt>Стать</dt>
+                    <dd>Чоловік</dd>
+                </dl>
+            </div>
+        </aside>
+    </div>
+
+    <div class="modal-backdrop" data-modal="create" hidden>
+        <section class="modal-card compact-modal" role="dialog" aria-modal="true" aria-labelledby="create-chat-title">
+            <button class="modal-close" type="button" data-close-modal aria-label="Закрити">×</button>
+            <h2 id="create-chat-title">Створити чат</h2>
+
+            <form data-create-form novalidate>
+                <label>
+                    Назва чату
+                    <input type="text" name="chatName" placeholder="Наприклад, Design Team" autocomplete="off">
+                </label>
+                <p class="field-error" data-create-error hidden>Введіть назву чату.</p>
+
+                <div class="modal-actions">
+                    <button class="secondary-button" type="button" data-close-modal>Скасувати</button>
+                    <button class="primary-button" type="submit">Створити</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="modal-backdrop" data-modal="delete" hidden>
+        <section class="modal-card compact-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title">
+            <button class="modal-close" type="button" data-close-modal aria-label="Закрити">×</button>
+            <h2 id="delete-chat-title">Видалити чат?</h2>
+            <p class="confirm-text">Ви впевнені, що хочете видалити цей чат?</p>
+
+            <div class="modal-actions">
+                <button class="secondary-button" type="button" data-close-modal>Скасувати</button>
+                <button class="danger-button" type="button" data-confirm-delete>Видалити</button>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal-backdrop" data-modal="profile" hidden>
+        <section class="modal-card profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+            <div class="modal-heading">
+                <h2 id="profile-title">Налаштування</h2>
+                <button class="modal-close" type="button" data-close-modal aria-label="Закрити">×</button>
+            </div>
+
+            <form class="profile-form">
+                <div class="profile-image-section">
+                    <span class="profile-avatar">{{ (profile_name[:1] ~ profile_second_name[:1])|upper }}</span>
+
+                    <div>
+                        <span class="form-section-title">Зображення профілю</span>
+                        <div class="image-actions">
+                            <button class="secondary-button icon-text" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M7 7h10v10H7z"/>
+                                    <path d="M9 3h6v4H9z"/>
+                                    <path d="M5 21h14"/>
+                                </svg>
+                                Замінити
+                            </button>
+                            <button class="ghost-danger-button icon-text" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M3 6h18"/>
+                                    <path d="M8 6V4h8v2"/>
+                                    <path d="M6 6l1 15h10l1-15"/>
+                                </svg>
+                                Видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-fields">
+                    <label>Імʼя<input type="text" value="{{ profile_name }}"></label>
+                    <label>Прізвище<input type="text" value="{{ profile_second_name }}"></label>
+                    <label>Імʼя користувача<input type="text" value="{{ profile_username }}"></label>
+                    <label>Стать
+                        <select>
+                            <option {% if profile_gender == 'Female' %}selected{% endif %}>Жінка</option>
+                            <option {% if profile_gender == 'Male' %}selected{% endif %}>Чоловік</option>
+                            <option {% if profile_gender == 'Other' %}selected{% endif %}>Інше</option>
+                        </select>
+                    </label>
+                    <label>Дата народження
+                        <input type="date" value="{{ profile_birthday }}">
+                    </label>
+                </div>
+
+                <div class="profile-footer">
+                    <button class="delete-account-button" type="button">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 6h18"/>
+                            <path d="M8 6V4h8v2"/>
+                            <path d="M6 6l1 15h10l1-15"/>
+                        </svg>
+                        Видалити акаунт
+                    </button>
+
+                    <div class="modal-actions">
+                        <button class="secondary-button" type="button" data-close-modal>Скасувати</button>
+                        <button class="primary-button" type="button" data-close-modal>Зберегти</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script src="{{ url_for('chat.static', filename='js/chat.js') }}"></script>
 {% endblock %}
