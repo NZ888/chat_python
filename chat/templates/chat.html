@@ -67,13 +67,8 @@
                 <input type="search" placeholder="Пошук чатів..." data-chat-search aria-label="Пошук чатів">
             </div>
 
-            <div class="sidebar-title-row">
-                <h2>Ваш чат</h2>
-                <button class="small-outline-button" type="button" data-open-create aria-label="Створити чат">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                </button>
+            <div class="create-chat-line">
+                <button class="create-chat-button" type="button" data-open-create>+ Створити чат</button>
             </div>
 
             <div class="loading-state" data-loading-state>
@@ -82,8 +77,22 @@
             </div>
 
             <div class="empty-state" data-empty-state hidden>
-                <p>У вас поки немає чатів.</p>
-                <button class="primary-button" type="button" data-open-create>Створити чат</button>
+            </div>
+
+            <div class="sidebar-title-row">
+                <h2>Ваш чат</h2>
+                <button class="small-outline-button" type="button" data-owner-delete hidden aria-label="Видалити чат">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_18_945)">
+                        <path d="M2 3.99998H14M12.6667 3.99998V13.3333C12.6667 14 12 14.6666 11.3333 14.6666H4.66667C4 14.6666 3.33333 14 3.33333 13.3333V3.99998M5.33333 3.99998V2.66665C5.33333 1.99998 6 1.33331 6.66667 1.33331H9.33333C10 1.33331 10.6667 1.99998 10.6667 2.66665V3.99998M6.66667 7.33331V11.3333M9.33333 7.33331V11.3333" stroke="#007AFF" stroke-linecap="round" stroke-linejoin="round" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_18_945">
+                        <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                    </defs>
+                    </svg>
+                </button>
             </div>
 
             <p class="not-found-state" data-not-found-state hidden>Чати не знайдено</p>
@@ -166,7 +175,7 @@
             <button class="modal-close" type="button" data-close-modal aria-label="Закрити">×</button>
             <h2 id="create-chat-title">Створити чат</h2>
 
-            <form data-create-form novalidate>
+            <form data-create-form novalidate style="display: flex;flex-direction: column; gap: 12px;">
                 <label>
                     Назва чату
                     <input type="text" name="chatName" placeholder="Наприклад, Design Team" autocomplete="off">
@@ -175,7 +184,7 @@
 
                 <div class="modal-actions">
                     <button class="secondary-button" type="button" data-close-modal>Скасувати</button>
-                    <button class="primary-button" type="submit">Створити</button>
+                    <button class="primary-button create-modal-button" type="submit">Створити</button>
                 </div>
             </form>
         </section>

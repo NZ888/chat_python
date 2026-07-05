@@ -7,6 +7,12 @@ user.user.add_url_rule(
     methods = ["GET", "POST"]
 )
 
+user.user.add_url_rule(
+    rule = '/register/success/',
+    view_func = user.render_register_success,
+    methods = ["GET"]
+)
+
 chat.chat.add_url_rule(
     rule = '/',
     view_func = chat.render_chat,

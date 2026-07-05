@@ -20,10 +20,13 @@ def render_register():
                 DATABASE.session.add(user)
                 DATABASE.session.commit()
                 send_message(user.id, email)
-                # return flask.redirect("/")
+                return flask.redirect("/register/success/")
 
     return flask.render_template('register.html')
 
+
+def render_register_success():
+    return flask.render_template('register_success.html')
 
 def render_login():
     if flask.request.method == "POST":

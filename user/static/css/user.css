@@ -152,3 +152,39 @@ table {
 	border-spacing: 0;
 }
 
+
+
+.success-block{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 475px;
+    gap: 24px;
+}
+
+.success-block h1{
+    font-size: 22px;
+}
+
+.success-block p{
+    font-family: var(--font-family);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 160%;
+    color: #070a1c;
+    text-align: center;
+}
+
+.success-block a{
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.success-image{
+    min-height: 180px;
+}
+
+.success-image img{
+    max-width: 300px;
+}

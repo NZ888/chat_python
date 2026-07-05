@@ -11,6 +11,9 @@ dotenv.load_dotenv()
 def send_message(user_id, user_email):
     email = os.getenv("EMAIL")
     SMT_PASSWORD = os.getenv("SMT_PASSWORD")
+    if not email or not SMT_PASSWORD:
+        raise ValueError("EMAIL and SMT_PASSWORD must be set in .env")
+
     with smtplib.SMTP(host="smtp.gmail.com", port=587) as smtp:
         smtp.starttls()
         smtp.login(user=email, password=SMT_PASSWORD)

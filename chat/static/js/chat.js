@@ -8,6 +8,7 @@ let socket = null;
 let socketConnected = false;
 let pendingJoinChat = null;
 let currentUserId = null;
+let ownerChatId = null;
 
 const colors = ["blue", "purple", "green", "orange", "navy"];
 
@@ -18,6 +19,9 @@ const chatSearch = chatBlock.querySelector("[data-chat-search]");
 const loading = chatBlock.querySelector("[data-loading-state]");
 const emptyBlock = chatBlock.querySelector("[data-empty-state]");
 const notFound = chatBlock.querySelector("[data-not-found-state]");
+const ownerDeleteButton = chatBlock.querySelector("[data-owner-delete]");
+const conversation = chatBlock.querySelector(".conversation");
+const conversationHeader = chatBlock.querySelector(".conversation-header");
 const chatTitle = chatBlock.querySelector("[data-active-title]");
 const chatInfo = chatBlock.querySelector("[data-active-subtitle]");
 const messagesBlock = chatBlock.querySelector("[data-message-list]");
@@ -79,6 +83,8 @@ function drawChats() {
     emptyBlock.hidden = chats.length !== 0 || hasSearch;
     notFound.hidden = chats.length === 0 || filteredChats.length !== 0;
     chatList.hidden = filteredChats.length === 0;
+    ownerDeleteButton.hidden = !ownerChatId;
+    ownerDeleteButton.dataset.deleteChat = ownerChatId || "";
 
     filteredChats.forEach((chat, index) => {
         chatList.appendChild(makeChatItem(chat, index, true));
@@ -114,7 +120,6 @@ function makeChatItem(chat, index, isMember) {
             <span class="chat-preview">${cleanText(getChatText(chat))}</span>
         </button>
         <span class="chat-meta">
-            ${isMember && chat.isOwner ? `<button class="delete-chat-button" type="button" data-delete-chat="${chat.id}" aria-label="Видалити ${cleanText(chat.title)}">⌫</button>` : ""}
             ${!isMember ? `<button class="join-chat-button" type="button" data-join-chat="${chat.id}">Увійти</button>` : ""}
         </span>
     `;
@@ -128,15 +133,29 @@ function drawMessages() {
     messagesBlock.innerHTML = "";
 
     if (!chat) {
-        chatTitle.textContent = "Чат не вибрано";
-        chatInfo.textContent = "Створіть чат або виберіть його зі списку";
-        messagesBlock.innerHTML = '<div class="empty-state"><p>Активного чату поки немає.</p></div>';
+        conversation.classList.add("conversation-empty");
+        conversationHeader.hidden = true;
+        messageForm.hidden = true;
+        messagesBlock.innerHTML = `
+            <div class="empty-chat-screen">
+                <div class="empty-chat-icon">
+                    <svg viewBox="0 0 92 92" aria-hidden="true">
+                        <path d="M25 61.5L29 47.5C27.8 44.8 27.2 41.9 27.2 38.8C27.2 24.7 39 13.8 53.2 13.8C67.3 13.8 79 24.7 79 38.8C79 52.9 67.3 63.8 53.2 63.8C47.8 63.8 42.8 62.2 38.8 59.5L25 61.5Z"/>
+                    </svg>
+                </div>
+                <h2>Виберіть чат</h2>
+                <p>Приєднайтеся до кімнати та почніть розмову</p>
+            </div>
+        `;
         messageInput.disabled = true;
         return;
     }
 
     const messages = chat.messages || [];
 
+    conversation.classList.remove("conversation-empty");
+    conversationHeader.hidden = false;
+    messageForm.hidden = false;
     chatTitle.textContent = chat.title;
     chatInfo.textContent = `${chat.usersCount || 1} учасників · код ${chat.word}`;
     messageInput.disabled = false;
@@ -331,11 +350,12 @@ function loadChats() {
     request("/api/chats/")
         .then((data) => {
             currentUserId = data.currentUserId;
+            ownerChatId = data.ownerChatId || null;
             chats = data.myChats || [];
             otherChats = data.otherChats || [];
 
             if (!chats.find((chat) => chat.id === activeChat)) {
-                activeChat = chats.length ? chats[0].id : null;
+                activeChat = null;
             }
 
             loading.hidden = true;
