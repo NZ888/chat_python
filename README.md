@@ -97,7 +97,7 @@ Main parts of the project:
 - `project/migrations/` stores Alembic migration files for database changes.
 - `project/instance/` is used for local runtime data, for example the SQLite database file.
 
-![alt text](../screenshots/image.png)
+![alt text](./screenshots/image.png)
 
 ### 6. Conclusion
 
@@ -203,8 +203,7 @@ http://localhost:8000
 - `project/migrations/` зберігає Alembic migrations для змін у базі даних.
 - `project/instance/` використовується для локальних runtime-даних, наприклад SQLite database file.
 
-![alt text](../screenshots/image.png)
-
+![alt text](./screenshots/image.png)
 
 ### 6. Висновок по роботі
 
