@@ -7,7 +7,11 @@ from flask_socketio import emit, join_room
 
 from project.db import DATABASE
 from project.socket import socketio
+from user.models import User
 from .models import Chat, Message, UserChatLink
+
+ONLINE_USER_SIDS = {}
+SID_USERS = {}
 
 
 def render_chat():
@@ -38,6 +42,66 @@ def get_letters(name):
     return letters.upper() or "U"
 
 
+def add_online_user(user_id, sid):
+    ONLINE_USER_SIDS.setdefault(user_id, set()).add(sid)
+    SID_USERS[sid] = user_id
+
+
+def remove_online_sid(sid):
+    user_id = SID_USERS.pop(sid, None)
+    if user_id is None:
+        return
+
+    user_sids = ONLINE_USER_SIDS.get(user_id, set())
+    user_sids.discard(sid)
+
+    if user_sids:
+        ONLINE_USER_SIDS[user_id] = user_sids
+    else:
+        ONLINE_USER_SIDS.pop(user_id, None)
+
+
+def get_online_user_ids():
+    return set(ONLINE_USER_SIDS.keys())
+
+
+def is_user_online(user_id):
+    return user_id in ONLINE_USER_SIDS
+
+
+def get_user_data(user):
+    name = get_user_name(user)
+
+    return {
+        "id": user.id,
+        "name": name,
+        "username": user.user_name or user.email,
+        "avatar": get_letters(name),
+        "online": is_user_online(user.id)
+    }
+
+
+def get_presence_data():
+    user_ids = list(get_online_user_ids())
+    if not user_ids:
+        return {
+            "onlineUserIds": [],
+            "onlineUsers": []
+        }
+
+    users = User.query.filter(User.id.in_(user_ids)).all()
+    users = sorted(users, key=lambda user: get_user_name(user).lower())
+
+    return {
+        "onlineUserIds": user_ids,
+        "onlineUsers": [get_user_data(user) for user in users]
+    }
+
+
+def broadcast_presence():
+    socketio.emit("presence_changed", get_presence_data())
+
+
 def get_message_data(message):
     user = message.user
     name = get_user_name(user)
@@ -54,8 +118,8 @@ def get_message_data(message):
 
 
 def get_chat_data(chat, with_messages=False):
-    users_count = len(chat.users)
     created_at = chat.created_at.strftime("%d.%m") if chat.created_at else ""
+    members = [get_user_data(user) for user in chat.users]
 
     data = {
         "id": chat.id,
@@ -65,15 +129,9 @@ def get_chat_data(chat, with_messages=False):
         "time": created_at,
         "ownerId": chat.owner_id,
         "isOwner": chat.owner_id == flask_login.current_user.id,
-        "usersCount": users_count,
-        "members": [
-            {
-                "id": user.id,
-                "name": get_user_name(user),
-                "avatar": get_letters(get_user_name(user))
-            }
-            for user in chat.users
-        ]
+        "usersCount": len(members),
+        "onlineCount": len([user for user in members if user["online"]]),
+        "members": members
     }
 
     if with_messages:
@@ -93,13 +151,16 @@ def get_chats():
     user = flask_login.current_user
     my_chats = Chat.query.join(UserChatLink).filter(UserChatLink.user_id == user.id).order_by(Chat.created_at.desc()).all()
     other_chats = Chat.query.filter(~Chat.users.any(id=user.id)).order_by(Chat.created_at.desc()).all()
+    owner_chat_id = user_owned_chat_id()
 
     return flask.jsonify({
         "success": True,
         "currentUserId": user.id,
         "myChats": [get_chat_data(chat, True) for chat in my_chats],
         "otherChats": [get_chat_data(chat) for chat in other_chats],
-        "ownerChatId": user_owned_chat_id()
+        "ownerChatId": owner_chat_id,
+        "canCreateChat": owner_chat_id is None,
+        **get_presence_data()
     })
 
 
@@ -194,7 +255,15 @@ def socket_connect():
     if not flask_login.current_user.is_authenticated:
         return False
 
+    add_online_user(flask_login.current_user.id, flask.request.sid)
     emit("connected", {"userId": flask_login.current_user.id})
+    broadcast_presence()
+
+
+@socketio.on("disconnect")
+def socket_disconnect():
+    remove_online_sid(flask.request.sid)
+    broadcast_presence()
 
 
 @socketio.on("join_chat_room")

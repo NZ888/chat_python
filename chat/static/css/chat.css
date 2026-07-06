@@ -298,19 +298,6 @@ button {
     padding: 0 0 16px;
 }
 
-.available-chats {
-    border-top: 1px solid var(--line);
-    padding-top: 12px;
-}
-
-.available-chats h3 {
-    margin: 0;
-    padding: 0 24px 10px;
-    color: #5f6877;
-    font-size: 13px;
-    font-weight: 700;
-}
-
 .chat-item {
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr) auto;
@@ -363,6 +350,10 @@ button {
     background: transparent;
     padding: 0;
     text-align: left;
+}
+
+.chat-open:disabled {
+    cursor: default;
 }
 
 .chat-name-line {
@@ -500,35 +491,35 @@ button {
 }
 
 .empty-chat-icon {
-    width: 168px;
-    height: 168px;
+    width: 112px;
+    height: 112px;
     display: grid;
     place-items: center;
-    margin-bottom: 46px;
+    margin-bottom: 28px;
     border-radius: 50%;
     background: #f8f8f8;
 }
 
 .empty-chat-icon svg {
-    width: 92px;
-    height: 92px;
+    width: 62px;
+    height: 62px;
     fill: none;
     stroke: #007aff;
-    stroke-width: 5;
+    stroke-width: 4;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
 .empty-chat-screen h2 {
-    margin: 0 0 24px;
-    font-size: 36px;
+    margin: 0 0 14px;
+    font-size: 28px;
     font-weight: 600;
 }
 
 .empty-chat-screen p {
     margin: 0;
     color: #6c6c6c;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 400;
 }
 
@@ -621,7 +612,10 @@ button {
 }
 
 .users-list {
+    margin: 0;
+    list-style: none;
     padding: 8px 0;
+    overflow-y: auto;
 }
 
 .users-list li {
@@ -640,9 +634,40 @@ button {
     display: block;
 }
 
+.user-line {
+    min-width: 0;
+}
+
 .users-list strong {
     margin-bottom: 3px;
     font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.users-list small.status-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #cbd5e1;
+}
+
+.status-dot.online {
+    background: #16a34a;
+}
+
+.users-empty {
+    margin: 18px 22px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
 }
 
 .mini-avatar {

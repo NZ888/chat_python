@@ -67,7 +67,7 @@
                 <input type="search" placeholder="Пошук чатів..." data-chat-search aria-label="Пошук чатів">
             </div>
 
-            <div class="create-chat-line">
+            <div class="create-chat-line" data-create-chat-line hidden>
                 <button class="create-chat-button" type="button" data-open-create>+ Створити чат</button>
             </div>
 
@@ -79,7 +79,7 @@
             <div class="empty-state" data-empty-state hidden>
             </div>
 
-            <div class="sidebar-title-row">
+            <div class="sidebar-title-row" data-sidebar-title-row hidden>
                 <h2>Ваш чат</h2>
                 <button class="small-outline-button" type="button" data-owner-delete hidden aria-label="Видалити чат">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -96,12 +96,7 @@
             </div>
 
             <p class="not-found-state" data-not-found-state hidden>Чати не знайдено</p>
-            <ul class="chat-list" data-chat-list aria-label="Доступні чати"></ul>
-
-            <div class="available-chats" data-available-wrap hidden>
-                <h3>Доступні чати</h3>
-                <ul class="chat-list" data-available-list aria-label="Доступні чати"></ul>
-            </div>
+            <ul class="chat-list" data-chat-list aria-label="Чати"></ul>
         </aside>
 
         <section class="conversation" aria-label="Активний чат">
@@ -142,31 +137,12 @@
 
         <aside class="users-panel" aria-label="Користувачі">
             <div class="users-heading">
-                <h2>Користувачі</h2>
-                <span>24 користувачі · 8 online</span>
+                <h2>Користувачі онлайн</h2>
+                <span data-users-summary>Завантаження...</span>
             </div>
 
-            <ul class="users-list">
-                <li class="active"><span class="mini-avatar blue">IP</span><div><strong>Іван Петренко</strong><small>@ivan_petrenko</small></div></li>
-                <li><span class="mini-avatar purple">M</span><div><strong>Maria</strong><small>online</small></div></li>
-                <li><span class="mini-avatar green">J</span><div><strong>John</strong><small>online</small></div></li>
-                <li><span class="mini-avatar orange">K</span><div><strong>Kate</strong><small>online</small></div></li>
-                <li><span class="mini-avatar blue">S</span><div><strong>Sarah</strong><small>offline</small></div></li>
-                <li><span class="mini-avatar navy">D</span><div><strong>David</strong><small>offline</small></div></li>
-            </ul>
-
-            <div class="profile-preview">
-                <button class="panel-close" type="button" aria-label="Закрити картку профілю">×</button>
-                <span class="large-avatar">IP</span>
-                <strong>Іван Петренко</strong>
-                <a href="#">@ivan_petrenko</a>
-                <dl>
-                    <dt>Дата народження</dt>
-                    <dd>15 квіт. 1995 (30 років)</dd>
-                    <dt>Стать</dt>
-                    <dd>Чоловік</dd>
-                </dl>
-            </div>
+            <ul class="users-list" data-users-list></ul>
+            <p class="users-empty" data-users-empty hidden>Онлайн користувачі зʼявляться тут.</p>
         </aside>
     </div>
 
