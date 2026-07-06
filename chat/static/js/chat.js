@@ -9,22 +9,27 @@ let socketConnected = false;
 let pendingJoinChat = null;
 let currentUserId = null;
 let ownerChatId = null;
+let canCreateChat = true;
+let onlineUsers = [];
 
 const colors = ["blue", "purple", "green", "orange", "navy"];
 
 const chatList = chatBlock.querySelector("[data-chat-list]");
-const availableWrap = chatBlock.querySelector("[data-available-wrap]");
-const availableList = chatBlock.querySelector("[data-available-list]");
 const chatSearch = chatBlock.querySelector("[data-chat-search]");
+const createChatLine = chatBlock.querySelector("[data-create-chat-line]");
 const loading = chatBlock.querySelector("[data-loading-state]");
 const emptyBlock = chatBlock.querySelector("[data-empty-state]");
 const notFound = chatBlock.querySelector("[data-not-found-state]");
+const sidebarTitleRow = chatBlock.querySelector("[data-sidebar-title-row]");
 const ownerDeleteButton = chatBlock.querySelector("[data-owner-delete]");
 const conversation = chatBlock.querySelector(".conversation");
 const conversationHeader = chatBlock.querySelector(".conversation-header");
 const chatTitle = chatBlock.querySelector("[data-active-title]");
 const chatInfo = chatBlock.querySelector("[data-active-subtitle]");
 const messagesBlock = chatBlock.querySelector("[data-message-list]");
+const usersList = chatBlock.querySelector("[data-users-list]");
+const usersSummary = chatBlock.querySelector("[data-users-summary]");
+const usersEmpty = chatBlock.querySelector("[data-users-empty]");
 const createForm = chatBlock.querySelector("[data-create-form]");
 const createError = chatBlock.querySelector("[data-create-error]");
 const messageForm = chatBlock.querySelector("[data-message-form]");
@@ -63,42 +68,78 @@ function getChatText(chat) {
     return chat.lastMessage || "Повідомлень поки немає";
 }
 
-function getFilteredChats() {
-    const value = chatSearch.value.trim().toLowerCase();
+function getUserCountLabel(count) {
+    return `${count} ${count === 1 ? "користувач" : "користувачів"}`;
+}
 
-    if (!value) {
-        return chats;
+function getChatMemberLabel(count) {
+    return `${count} ${count === 1 ? "учасник" : "учасників"}`;
+}
+
+function getOnlineCountLabel(count) {
+    return `${count} онлайн`;
+}
+
+function getChatOnlineCount(chat) {
+    if (typeof chat.onlineCount === "number") {
+        return chat.onlineCount;
     }
 
-    return chats.filter((chat) => {
-        return chat.title.toLowerCase().includes(value) || getChatText(chat).toLowerCase().includes(value);
-    });
+    return (chat.members || []).filter((user) => user.online).length;
+}
+
+function updateActiveChatInfo() {
+    const chat = chats.find((item) => item.id === activeChat);
+
+    if (!chat) {
+        return;
+    }
+
+    chatInfo.textContent = `${getChatMemberLabel(chat.usersCount || 1)} · ${getOnlineCountLabel(getChatOnlineCount(chat))} · код ${chat.word}`;
+}
+
+function getSearchValue() {
+    return chatSearch.value.trim().toLowerCase();
+}
+
+function chatMatchesSearch(chat, value) {
+    return chat.title.toLowerCase().includes(value)
+        || getChatText(chat).toLowerCase().includes(value)
+        || String(chat.word || "").toLowerCase().includes(value);
+}
+
+function getFilteredChats() {
+    const value = getSearchValue();
+
+    if (!value) {
+        return chats.map((chat) => ({
+            chat,
+            isMember: true
+        }));
+    }
+
+    return [
+        ...chats.map((chat) => ({ chat, isMember: true })),
+        ...otherChats.map((chat) => ({ chat, isMember: false }))
+    ].filter((item) => chatMatchesSearch(item.chat, value));
 }
 
 function drawChats() {
     const filteredChats = getFilteredChats();
-    const hasSearch = chatSearch.value.trim() !== "";
+    const hasSearch = getSearchValue() !== "";
+    const showOwnChats = !hasSearch && chats.length > 0;
 
     chatList.innerHTML = "";
-    emptyBlock.hidden = chats.length !== 0 || hasSearch;
-    notFound.hidden = chats.length === 0 || filteredChats.length !== 0;
+    createChatLine.hidden = !canCreateChat;
+    emptyBlock.hidden = true;
+    sidebarTitleRow.hidden = !showOwnChats;
+    notFound.hidden = !hasSearch || filteredChats.length !== 0;
     chatList.hidden = filteredChats.length === 0;
-    ownerDeleteButton.hidden = !ownerChatId;
+    ownerDeleteButton.hidden = !showOwnChats || !ownerChatId;
     ownerDeleteButton.dataset.deleteChat = ownerChatId || "";
 
-    filteredChats.forEach((chat, index) => {
-        chatList.appendChild(makeChatItem(chat, index, true));
-    });
-
-    drawAvailableChats();
-}
-
-function drawAvailableChats() {
-    availableList.innerHTML = "";
-    availableWrap.hidden = otherChats.length === 0;
-
-    otherChats.forEach((chat, index) => {
-        availableList.appendChild(makeChatItem(chat, index, false));
+    filteredChats.forEach((item, index) => {
+        chatList.appendChild(makeChatItem(item.chat, index, item.isMember));
     });
 }
 
@@ -157,7 +198,7 @@ function drawMessages() {
     conversationHeader.hidden = false;
     messageForm.hidden = false;
     chatTitle.textContent = chat.title;
-    chatInfo.textContent = `${chat.usersCount || 1} учасників · код ${chat.word}`;
+    updateActiveChatInfo();
     messageInput.disabled = false;
 
     messages.forEach((message) => {
@@ -186,30 +227,71 @@ function makeMessage(message) {
     return messageItem;
 }
 
+function makeUserItem(user, index) {
+    const color = colors[index % colors.length];
+    const activeClass = user.id === currentUserId ? " active" : "";
+    const statusClass = user.online ? " online" : "";
+    const statusText = user.online ? "онлайн" : "офлайн";
+
+    return `
+        <li class="${activeClass}">
+            <span class="mini-avatar ${color}">${cleanText(user.avatar || getLetters(user.name))}</span>
+            <div class="user-line">
+                <strong>${cleanText(user.name || "User")}</strong>
+                <small class="status-line">
+                    <span class="status-dot${statusClass}"></span>
+                    ${statusText}
+                </small>
+            </div>
+        </li>
+    `;
+}
+
 function drawUsers() {
     const chat = chats.find((item) => item.id === activeChat);
-    const usersList = chatBlock.querySelector(".users-list");
-    const usersTitle = chatBlock.querySelector(".users-heading span");
 
-    if (!chat || !usersList) {
+    if (!usersList || !usersSummary || !usersEmpty) {
         return;
     }
 
-    usersTitle.textContent = `${chat.members.length} користувачів`;
-    usersList.innerHTML = chat.members.map((user) => `
-        <li>
-            <span class="mini-avatar blue">${cleanText(user.avatar)}</span>
-            <div>
-                <strong>${cleanText(user.name)}</strong>
-                <small>у чаті</small>
-            </div>
-        </li>
-    `).join("");
+    const users = chat
+        ? [...(chat.members || [])].sort((first, second) => Number(second.online) - Number(first.online))
+        : onlineUsers;
+    const onlineCount = chat ? getChatOnlineCount(chat) : onlineUsers.length;
+
+    usersSummary.textContent = chat
+        ? `${getUserCountLabel(users.length)} · ${getOnlineCountLabel(onlineCount)}`
+        : getOnlineCountLabel(onlineCount);
+
+    usersList.innerHTML = users.map(makeUserItem).join("");
+    usersList.hidden = users.length === 0;
+    usersEmpty.hidden = users.length !== 0;
 }
 
 function drawPage() {
     drawChats();
     drawMessages();
+    drawUsers();
+}
+
+function refreshChatPresence() {
+    const onlineIds = new Set(onlineUsers.map((user) => user.id));
+
+    [chats, otherChats].forEach((chatGroup) => {
+        chatGroup.forEach((chat) => {
+            chat.members = (chat.members || []).map((user) => ({
+                ...user,
+                online: onlineIds.has(user.id)
+            }));
+            chat.onlineCount = chat.members.filter((user) => user.online).length;
+        });
+    });
+}
+
+function applyPresence(data) {
+    onlineUsers = data.onlineUsers || [];
+    refreshChatPresence();
+    updateActiveChatInfo();
     drawUsers();
 }
 
@@ -249,9 +331,11 @@ function readSocketPacket(packet) {
 
     if (packet.startsWith("40")) {
         socketConnected = true;
-        if (pendingJoinChat) {
-            joinSocketRoom(pendingJoinChat);
-            pendingJoinChat = null;
+        const chatToJoin = pendingJoinChat || activeChat;
+        pendingJoinChat = null;
+
+        if (chatToJoin) {
+            joinSocketRoom(chatToJoin);
         }
         return;
     }
@@ -263,6 +347,14 @@ function readSocketPacket(packet) {
     const eventData = JSON.parse(packet.slice(2));
     const eventName = eventData[0];
     const data = eventData[1] || {};
+
+    if (eventName === "connected") {
+        currentUserId = data.userId || currentUserId;
+    }
+
+    if (eventName === "presence_changed") {
+        applyPresence(data);
+    }
 
     if (eventName === "new_message") {
         addSocketMessage(data);
@@ -325,12 +417,12 @@ function connectSocket() {
 }
 
 function connectChat() {
-    if (socket) {
-        joinSocketRoom(activeChat);
+    if (!activeChat) {
         return;
     }
 
-    if (!activeChat) {
+    if (socket) {
+        joinSocketRoom(activeChat);
         return;
     }
 
@@ -351,8 +443,11 @@ function loadChats() {
         .then((data) => {
             currentUserId = data.currentUserId;
             ownerChatId = data.ownerChatId || null;
+            canCreateChat = data.canCreateChat !== false;
             chats = data.myChats || [];
             otherChats = data.otherChats || [];
+            onlineUsers = data.onlineUsers || [];
+            refreshChatPresence();
 
             if (!chats.find((chat) => chat.id === activeChat)) {
                 activeChat = null;
@@ -360,6 +455,7 @@ function loadChats() {
 
             loading.hidden = true;
             drawPage();
+            connectSocket();
             connectChat();
         });
 }
@@ -491,4 +587,5 @@ messageForm.addEventListener("submit", (event) => {
     messageInput.value = "";
 });
 
+connectSocket();
 loadChats();
